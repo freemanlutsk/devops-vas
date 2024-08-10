@@ -1,0 +1,67 @@
+---
+#- name: Include OS-specific variables.
+#  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Disable systemd-timesyncd
+  systemd:
+    name: systemd-timesyncd
+    enabled: no
+
+- name: Set the correct timezone
+  file:
+    src: "/usr/share/zoneinfo/{{ ntp_timezone }}"
+    dest: /etc/localtime
+    state: link
+    force: yes
+
+# Debian family OSes also have an /etc/timezone file.
+- name: Set timezone in /etc/timezone file
+  template:
+    src: ntp/timezone.j2
+    dest: /etc/timezone
+    force: yes
+  notify:
+    - update tzdata
+  when: ansible_os_family == 'Debian'
+
+- name: Install NTP (RedHat).
+  yum: name=ntp state=present
+  when: ansible_os_family == 'RedHat'
+
+- name: Install NTP (Debian).
+  apt: name=ntp state=present force_apt_get=yes
+  when: ansible_os_family == 'Debian'
+
+- name: Generate ntp.conf file
+  template:
+    src: ntp/ntp.conf.j2
+    dest: /etc/ntp.conf
+  when: ntp_manage_config | bool
+
+- name: Ensure NTP is running and enabled as configured
+  service:
+    name: "ntp"
+    state: restarted
+    enabled: yes
+  when: ntp_enabled and ansible_os_family == 'Debian'
+
+- name: Ensure NTP is running and enabled as configured
+  service:
+    name: "ntpd"
+    state: restarted
+    enabled: yes
+  when: ntp_enabled and ansible_os_family == 'RedHat'
+
+- name: Ensure NTP is stopped and disabled as configured
+  service:
+    name: "ntp"
+    state: stopped
+    enabled: no
+  when: not ntp_enabled and ansible_os_family == 'Debian'
+
+- name: Ensure NTP is stopped and disabled as configured
+  service:
+    name: "ntpd"
+    state: stopped
+    enabled: no
+  when: not ntp_enabled and ansible_os_family == 'RedHat'

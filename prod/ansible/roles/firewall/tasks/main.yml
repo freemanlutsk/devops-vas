@@ -1,0 +1,76 @@
+---
+- name: "Include vars SSH"
+  ansible.builtin.include_vars:
+    file: ssh.yml
+  when: fw == 'on'
+
+- name: "Include vars Paranoid"
+  ansible.builtin.include_vars:
+    file: paranoid-ops.yml
+  when: fw == 'on'
+
+- name: "Include vars DEFAULT"
+  ansible.builtin.include_vars:
+    file: default.yml
+  when: fw == 'on'
+
+- name: Include vars PG
+  ansible.builtin.include_vars:
+    file: postgresql.yml
+  when: "fw == 'on' and 'postgresql_primary' in group_names"
+
+- name: "Ensure iptables is installed (RedHat)"
+  ansible.builtin.yum:
+    pkg: iptables
+    state: present
+  when: ansible_os_family == 'RedHat' and fw == 'on'
+
+- name: "Ensure iptables is installed (Debian)"
+  ansible.builtin.apt:
+    pkg: iptables
+    force_apt_get: true
+    state: present
+  when: ansible_os_family == 'Debian' and fw == 'on'
+
+- name: "Copy firewall script into place"
+  ansible.builtin.template:
+    src: firewall.bash.j2
+    dest: /etc/firewall.bash
+    owner: root
+    group: root
+    mode: "0744"
+  when: fw == 'on'
+  notify: "Restart firewall"
+
+- name: "Copy post network restart script into place"
+  ansible.builtin.template:
+    src: firewall.post.network.j2
+    dest: /etc/network/if-up.d/firewall-restart
+    owner: root
+    group: root
+    mode: "0755"
+  when: fw == 'on'
+
+- name: "Copy firewall init script into place"
+  ansible.builtin.template:
+    src: firewall.j2
+    dest: /etc/init.d/firewall
+    owner: root
+    group: root
+    mode: "0755"
+  when: fw == 'on'
+
+- name: "Ensure the firewall is enabled and will start on boot"
+  ansible.builtin.service:
+    name: firewall
+    state: started
+    enabled: true
+  when: fw == 'on'
+
+- name: Add cron job to renew DynDns IP
+  ansible.builtin.cron:
+    name: "Restart firewall to renew DynDns IP"
+    minute: "*/20"
+    hour: "*"
+    job: "/bin/bash /etc/init.d/firewall restart > /tmp/refresh.log"
+  when: fw == 'on'

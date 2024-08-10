@@ -1,0 +1,12 @@
+---
+
+- name: Install default soft
+  hosts: "{{ list_hosts | default(['fakehost']) }}"
+  roles:
+    - { role: install_default_soft, tags: ["install_default_soft"] }
+
+# - name: Install smart
+#   hosts: "{{ list_hosts | default(['fakehost']) }}"
+#   roles:
+#     - { role: smart, tags: ["smart"] }
+# 

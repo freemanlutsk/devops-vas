@@ -1,0 +1,5 @@
+---
+
+firewall_allowed_tcp_ports_WEB:
+  - {port: "80", comment: 'WEB HTTP'}
+  - {port: "443", comment: 'WEB HTTPS'}

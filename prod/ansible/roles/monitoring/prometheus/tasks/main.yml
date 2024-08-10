@@ -1,0 +1,13 @@
+---
+
+- name: Copy custom alerts rules
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "/etc/prometheus/rules/{{ item }}"
+    mode: "0644"
+    owner: "prometheus"
+    group: "prometheus"
+  with_items:
+    - custom.rules
+  notify:
+    - Restart prometheus

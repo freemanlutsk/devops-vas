@@ -1,0 +1,21 @@
+
+---
+- hosts: "{{ list_hosts | default(['fakehost']) }}"
+  roles:
+  - prometheus.prometheus.node_exporter
+  vars:
+    node_exporter_web_listen_address: "0.0.0.0:9100"
+    node_exporter_basic_auth_users:
+      export: Xevoopo9Ti8Eech5Ma4Aeloghiewaite
+    node_exporter_enabled_collectors:
+      - conntrack
+      - cpu
+      - ntp
+      - loadavg
+      - mdadm
+      - meminfo
+      - netdev
+      - nvme
+      - filesystem:
+          ignored-mount-points: "^/(sys|proc|dev|run)($|/)"
+          ignored-fs-types: "^(sys|proc|auto|tmpfs)fs$"  

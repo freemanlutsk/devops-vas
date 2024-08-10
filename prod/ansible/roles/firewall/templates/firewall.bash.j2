@@ -1,0 +1,136 @@
+#!/bin/bash
+# iptables firewall for common LAMP servers.
+#
+# This file should be located at /etc/firewall.bash, and is meant to work with
+#
+# Common port reference:
+#   22: SSH
+#   25: SMTP
+#   80: HTTP
+#   123: DNS
+#   443: HTTPS
+#   2222: SSH alternate
+#   4949: Munin
+#   6082: Varnish admin
+#   8080: HTTP alternate (often used with Tomcat)
+#   8983: Tomcat HTTP
+#   8443: Tomcat HTTPS
+#   9000: SonarQube
+#
+# @author Jeff Geerling
+#
+# Sleep for domain name
+sleep 5
+
+# No spoofing.
+if [ -e /proc/sys/net/ipv4/conf/all/rp_filter ]
+then
+for filter in /proc/sys/net/ipv4/conf/*/rp_filter
+do
+echo 1 > $filter
+done
+fi
+
+# Remove all rules and chains.
+###iptables -F
+iptables -F INPUT
+iptables -F OUTPUT
+# Accept traffic from loopback interface (localhost).
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -p icmp -j ACCEPT
+iptables -A OUTPUT -p gre -j ACCEPT
+iptables -A INPUT -p gre -j ACCEPT
+iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+#{# iptables -A INPUT -s 10.0.0.0/16 -j ACCEPT #}
+#GRE
+#iptables -A INPUT -s 192.168.0.0/24 -j ACCEPT
+
+# Forwarded ports.
+{# Add a rule for each forwarded port #}
+{% for forwarded_port in firewall_forwarded_tcp_ports %}
+iptables -t nat -I PREROUTING -p tcp --dport {{ forwarded_port.src }} -j REDIRECT --to-port {{ forwarded_port.dest }}
+iptables -t nat -I OUTPUT -p tcp -o lo --dport {{ forwarded_port.src }} -j REDIRECT --to-port {{ forwarded_port.dest }}
+{% endfor %}
+{% for forwarded_port in firewall_forwarded_udp_ports %}
+iptables -t nat -I PREROUTING -p udp --dport {{ forwarded_port.src }} -j REDIRECT --to-port {{ forwarded_port.dest }}
+iptables -t nat -I OUTPUT -p udp -o lo --dport {{ forwarded_port.src }} -j REDIRECT --to-port {{ forwarded_port.dest }}
+{% endfor %}
+
+{# Open all ports for network or IPs #}
+{% for host in firewall_allowed_ips_network %}
+iptables -A INPUT -s {{ host.host }} -m comment --comment "{{ host.comment }}" -j ACCEPT
+{% endfor %}
+
+
+{# --- START Default --- #}
+
+{% for port in firewall_allowed_tcp_ports_DEFAULT %}
+iptables -A INPUT -p tcp -m tcp --dport {{ port.port }} -m comment --comment "{{ port.comment }}" -j ACCEPT
+{% endfor %}
+{% for host in firewall_allowed_custom_services_DEFAULT %}
+iptables -A INPUT -s {{ host.host }} -p tcp -m state --state NEW -m tcp --dport {{ host.port }} -m comment --comment "{{ host.comment }}" -j ACCEPT
+{% endfor %}
+
+{# --- END Default --- #}
+
+{# --- START SSH --- #}
+
+{% for host in firewall_allowed_SSH %}
+iptables -A INPUT -s {{ host.host }} -p tcp -m state --state NEW -m tcp --dport {{ host.port }} -m comment --comment "{{ host.comment }}" -j ACCEPT
+{% endfor %}
+
+{# --- END SSH --- #}
+
+{# --- START PARANOID_OPS --- #}
+{% for host in firewall_allowed_PARANOID_OPS %}
+iptables -A INPUT -s {{ host.host }} -p tcp -m state --state NEW -m tcp --dport {{ host.port }} -m comment --comment "{{ host.comment }}" -j ACCEPT
+{% endfor %}
+
+{# --- END PARANOID_OPS --- #}
+
+{# --- START PARANOID_OPS_DYNDNS --- #}
+{% for host in firewall_allowed_dyndns_PARANOID_OPS %}
+iptables -A INPUT -s {{ host.host }} -p tcp -m state --state NEW -m tcp --dport {{ host.port }} -m comment --comment "{{ host.comment }}" -j ACCEPT
+iptables -A INPUT -s $(getent ahosts {{ host.host }}|awk '{print $1}'|head -n1) -p tcp -m state --state NEW -m tcp --dport {{ host.port }} -m comment --comment "{{ host.comment }}" -j ACCEPT
+{% endfor %}
+
+{# --- END PARANOID_OPS_DYNDNS --- #}
+
+{# --- START PG --- #}
+{% for host in firewall_allowed_single_ips_PG %}
+iptables -A INPUT -s {{ host.host }} -p tcp -m state --state NEW -m tcp --dport {{ host.port }} -m comment --comment "{{ host.comment }}" -j ACCEPT
+{% endfor %}
+
+{% for host in firewall_allowed_dyndns_PARANOID_OPS_PG %}
+iptables -A INPUT -s $(getent ahosts {{ host.host }}|awk '{print $1}'|head -n1) -p tcp -m state --state NEW -m tcp --dport {{ host.port }} -m comment --comment "{{ host.comment }}" -j ACCEPT
+{% endfor %}
+
+{# --- END PG --- #}
+
+# Accept icmp ping requests.
+#iptables -A INPUT -p icmp -j ACCEPT
+
+# Allow NTP traffic for time synchronization.
+#iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
+#iptables -A INPUT -p udp --sport 123 -j ACCEPT
+
+# Additional custom rules.
+{% for rule in firewall_additional_rules %}
+{{ rule }}
+{% endfor %}
+
+# Allow established connections:
+#iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Log EVERYTHING (ONLY for Debug).
+# iptables -A INPUT -j LOG
+
+#{% if firewall_log_dropped_packets %}
+# Log other incoming requests (all of which are dropped) at 15/minute max.
+#iptables -A INPUT -m limit --limit 15/minute -j LOG --log-level 7 --log-prefix "Dropped by firewall: "
+#{% endif %}
+
+# Drop all other traffic.
+#iptables -A INPUT -j DROP
+iptables -A OUTPUT -o eth0 -m conntrack --ctstate INVALID -j DROP
+iptables -A INPUT -j REJECT --reject-with icmp-host-prohibited

@@ -1,0 +1,10 @@
+---
+
+- name: Sysctl.
+  include: sysctl.yml
+
+- name: Disable Ondemand
+  include: ondemand.yml
+
+- name: tzdata
+  include: tzdata.yml

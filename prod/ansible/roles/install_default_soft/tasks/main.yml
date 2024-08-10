@@ -1,0 +1,33 @@
+---
+
+- name: "Dist upgrade"
+  include: dist-upgrade.yml
+  when: upgrade == "on" and default == "on"
+
+- name: "Security (key, pass, user)"
+  include: security.yml
+  when: default == "on"
+  tags: security
+
+- name: "Include Ubuntu tasks"
+  include: ubuntu.yml
+  tags: ubuntu_packages
+  when: default == "on"
+
+- name: "Install NTP"
+  include: ntp.yml
+  when: default == "on"
+  tags: ntp
+
+- name: "Install psql"
+  include: psql.yml
+  when: inst_type == "PostgreSQL"
+
+- name: "Install postgresqltuner"
+  include: postgresqltuner.yml
+  when: inst_type == "PostgreSQL"
+
+- name: "Wait for server to restart"
+  include: reboot.yml
+  when: reboot == "on" and default == "on"
+  tags: reboot

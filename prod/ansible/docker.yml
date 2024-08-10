@@ -1,0 +1,6 @@
+---
+
+- name: Install Docker
+  hosts: "{{ list_hosts | default(['fakehost']) }}"
+  roles:
+    - { role: docker, tags: ["docker"] }

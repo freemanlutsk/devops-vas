@@ -1,0 +1,11 @@
+---
+
+- name: reload sysctl
+  command: "{{ item }}"
+  with_items:
+    - "modprobe ip_conntrack"
+    - "sysctl -p -q"
+  register: result
+  changed_when: "result.rc != 0"
+  # always_run: yes
+  when: ansible_os_family == "Debian" and ansible_distribution_release == "xenial"

@@ -1,0 +1,5 @@
+---
+
+- name: disable ondemand
+  command: systemctl disable ondemand.service
+  when: ansible_os_family == "Debian" and ansible_distribution_release == "xenial"
