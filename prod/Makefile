@@ -23,4 +23,3 @@ alertmanager:
 
 node-exporter:
 	cd ansible && ansible-playbook -i hosts --extra-vars "list_hosts=all monitoring!=off" node_exporter.yml
-	
