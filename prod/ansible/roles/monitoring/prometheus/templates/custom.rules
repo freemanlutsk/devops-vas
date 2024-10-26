@@ -172,8 +172,8 @@ groups:
     labels:
       severity: warning
 
-- alert: Host OOM kill detected
-  annotations:
+  - alert: Host OOM kill detected
+    annotations:
       message: OOM kill detected
       summary: OOM kill detected check your memory utilization
     expr: '(increase(node_vmstat_oom_kill[1m]) > 0) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}'
