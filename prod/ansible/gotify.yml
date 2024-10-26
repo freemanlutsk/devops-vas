@@ -1,0 +1,6 @@
+---
+
+- name: Install Gotify
+  hosts: "{{ list_hosts | default(['fakehost']) }}"
+  roles:
+    - { role: monitoring/gotify, tags: ["gotify"] }

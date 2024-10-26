@@ -26,3 +26,9 @@ node-exporter:
 
 blackbox-exporter:
 	cd ansible && ansible-playbook -i hosts --extra-vars "list_hosts=prometheus monitoring!=off" blackbox_exporter.yml
+
+gotify:
+	cd ansible && ansible-playbook -i hosts --extra-vars "list_hosts=prometheus" gotify.yml
+
+proxmox-notifications:
+	cd ansible && ansible-playbook -i hosts --extra-vars "list_hosts=$(HOSTS)" proxmox.yml -t notifications

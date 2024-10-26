@@ -1,0 +1,7 @@
+---
+
+- name: Setup Proxmox gotify notifications
+  hosts: "{{ list_hosts | default(['fakehost']) }}"
+  roles:
+    - { role: proxmox/notifications, tags: ["notifications"] }
+

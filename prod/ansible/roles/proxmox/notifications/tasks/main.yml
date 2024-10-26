@@ -1,0 +1,11 @@
+---
+
+- name: Update a notifications.cfg
+  ansible.builtin.template:
+    src: notifications.cfg
+    dest: /etc/pve/notifications.cfg
+
+- name: Update a priv notifications.cfg
+  ansible.builtin.template:
+    src: priv_notifications.cfg
+    dest: /etc/pve/priv/notifications.cfg
