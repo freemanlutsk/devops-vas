@@ -172,6 +172,15 @@ groups:
     labels:
       severity: warning
 
+  - alert: Host RAID array resync is in progress
+    annotations:
+      message: "Host RAID resync is in progress"
+      summary: RAID array resync is in progress
+    expr: '(node_md_disks{state="resync"} > 0) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}'
+    for: 10m
+    labels:
+      severity: warning
+
   - alert: Host OOM kill detected
     annotations:
       message: OOM kill detected
