@@ -2,7 +2,7 @@
 ansible_python_interpreter=/usr/bin/python3
 
 [prometheus]
-prometheus  ansible_host=116.202.50.15 ansible_port=22 type=virtual inst_type=Prometheus fw=on INT_DNS=127.0.0.1
+prometheus  ansible_host=178.63.119.145 ansible_port=22 type=virtual inst_type=Prometheus fw=on INT_DNS=127.0.0.1
 
 [proxmox_nodes]
 privateprox3  ansible_host=159.69.66.135 type=virtual fw=on INT_DNS=127.0.0.1

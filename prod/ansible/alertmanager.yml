@@ -13,9 +13,9 @@
     alertmanager_receivers:
       - name: 'telegram'
         telegram_configs:
-          - bot_token: '6623371627:AAG7Nt6KUYo-Ojtcchq1W5S5XNBGAfK36Hw'
+          - bot_token: '7911063915:AAElkxpSs4vtKWxNGbrdIkQCe1UtKGKaDDo'
             api_url: 'https://api.telegram.org'
-            chat_id: -4009831830
+            chat_id: -4534530750
             message: '{% raw %}{{ template "telegram_message" . }}{% endraw %}'
             parse_mode: 'HTML'
             send_resolved: true

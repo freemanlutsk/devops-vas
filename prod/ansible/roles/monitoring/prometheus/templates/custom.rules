@@ -153,13 +153,32 @@ groups:
     for: 10m
     labels:
       severity: warning
-  - alert: IsmackTaskCountIsLow
+  
+  - alert: Host RAID array got inactive
     annotations:
-      message: Tasks count is too low
-      summary: Tasks count is too low
-    expr: 'pg_ismack_tasks == 0'
+      message: "RAID array {{ $labels.device }} is in a degraded state due to one or more disk failures. The number of spare drives is insufficient to fix the issue automatically."
+      summary: RAID array has a critical problem
+    expr: '(node_md_state{state="inactive"} > 0) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}'
+    for: 10m
+    labels:
+      severity: critical
+
+  - alert: Host RAID array got inactive
+    annotations:
+      message: "Host RAID disk failure"
+      summary: RAID array has a problem
+    expr: '(node_md_disks{state="failed"} > 0) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}'
     for: 10m
     labels:
       severity: warning
+
+- alert: Host OOM kill detected
+  annotations:
+      message: OOM kill detected
+      summary: OOM kill detected check your memory utilization
+    expr: '(increase(node_vmstat_oom_kill[1m]) > 0) * on(instance) group_left (nodename) node_uname_info{nodename=~".+"}'
+    for: 30s
+    labels:
+      severity: warning 
 
 {% endraw %}
