@@ -29,6 +29,7 @@
         - "{{ hostvars['privateprox4'].ansible_host }}:9100"
         - "{{ hostvars['privateprox5'].ansible_host }}:9100"        
         - "{{ hostvars['privateprox6'].ansible_host }}:9100"
+        - "{{ hostvars['privateprox7'].ansible_host }}:9100"
       relabel_configs:
         - source_labels: [ __address__ ]
           target_label: hostname
@@ -48,8 +49,8 @@
           replacement: "{{ hostvars['privateprox5'].inventory_hostname }}"
         - source_labels: [ __address__ ]
           target_label: hostname
-          regex: "{{ hostvars['privateprox6'].ansible_host }}:9100"
-          replacement: "{{ hostvars['privateprox6'].inventory_hostname }}"        
+          regex: "{{ hostvars['privateprox7'].ansible_host }}:9100"
+          replacement: "{{ hostvars['privateprox7'].inventory_hostname }}"        
     - job_name: 'blackbox'
       metrics_path: /probe
       params:
