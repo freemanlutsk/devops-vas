@@ -1,0 +1,74 @@
+- name: Include vars
+  ansible.builtin.include_vars: "{{ item }}"
+  with_items:
+#    - ../vars/vault.yml
+    - ../vars/main.yml
+
+- name: Install APT packages install
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - smartmontools
+    - mailutils
+    - pwgen
+    - atop
+    - parted
+    - iotop
+    - sysstat
+    - isc-dhcp-server
+    - telnet
+    - tcpdump
+    - mc
+    - vim
+
+- name: Remove line containing "tmp" from fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '.*tmp.*'
+    state: absent
+    backup: true
+
+- name: Unmount /mnt
+  ansible.posix.mount:
+    path: /mnt
+    state: unmounted
+
+- name: Remove the logical volume /dev/vg0/tmp
+  community.general.lvol:
+    vg: vg0
+    lv: tmp
+    state: absent
+    force: true
+
+- name: Create thin pool lv_thin_vm in vg0
+  community.general.lvol:
+    vg: vg0
+    # lv: lv_thin_vm
+    size: 100%FREE
+    thinpool: lv_thin_vm
+  ignore_errors: true
+
+- name: Update sysctl config
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+  with_items:
+    - { name: "net.ipv4.ip_forward", value: "1"}
+    - { name: "net.ipv6.conf.all.disable_ipv6", value: "1"}
+    - { name: "net.ipv6.conf.default.disable_ipv6", value: "1"}
+
+- name: Copy backup mount checker
+  ansible.builtin.template:
+    src: status_mnt.sh
+    dest: /opt/status_mnt.sh
+    mode: '0755'
+
+- name: Create checker cron
+  ansible.builtin.cron:
+    name: "status_mnt.sh"
+    minute: "*/60"
+    job: "bash /opt/status_mnt.sh >> /tmp/mount.log 2>&1"
+    state: present
+  

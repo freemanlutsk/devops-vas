@@ -30,5 +30,10 @@ blackbox-exporter:
 gotify:
 	cd ansible && ansible-playbook -i hosts --extra-vars "list_hosts=prometheus" gotify.yml
 
+
+# Proxmox
+proxmox-init:
+	cd ansible && ansible-playbook -i hosts --extra-vars "list_hosts=$(HOSTS)" proxmox.yml -t proxmox-init
+
 proxmox-notifications:
 	cd ansible && ansible-playbook -i hosts --extra-vars "list_hosts=$(HOSTS)" proxmox.yml -t notifications
