@@ -1,0 +1,35 @@
+
+---
+- hosts: "{{ list_hosts | default(['fakehost']) }}"
+  roles:
+  - { role: monitoring/alertmanager, tags: ["alertmanager-custom"] }
+  - prometheus.prometheus.alertmanager
+  vars:
+    alertmanager_version: latest
+    alertmanager_web_listen_address: '127.0.0.1:9093'
+    alertmanager_config_flags_extra:
+      log.level: debug
+
+    alertmanager_receivers:
+      - name: 'telegram'
+        telegram_configs:
+          - bot_token: '7911063915:AAElkxpSs4vtKWxNGbrdIkQCe1UtKGKaDDo'
+            api_url: 'https://api.telegram.org'
+            chat_id: -4534530750
+            message: '{% raw %}{{ template "telegram_message" . }}{% endraw %}'
+            parse_mode: 'HTML'
+            send_resolved: true
+
+    #alertmanager_route:
+    #  group_by: ['alertname']
+    #  group_wait: 30s
+    #  group_interval: 1m
+    #  repeat_interval: 2m
+    #  receiver: 'telegram'
+
+    alertmanager_route:
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 1h
+      receiver: 'telegram'

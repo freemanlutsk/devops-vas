@@ -1,0 +1,30 @@
+firewall_allowed_custom_services_PG: []
+firewall_allowed_groups_ips_PG: []
+firewall_allowed_single_ips_PG:
+  - {host: '65.108.193.98', port: "5432",  comment: 'Proxmox main'}
+  - {host: '65.21.115.16/29', port: "5432",  comment: 'Hetzner Subnet'}
+  - {host: '65.21.229.174/32', port: "5432",  comment: 'Hetzner Subnet'}
+  - {host: '95.216.238.56/29', port: "5432",  comment: 'Hetzner Subnet'}
+  - {host: '95.217.196.173/29', port: "5432",  comment: 'Homeweb Prox4'}
+  - {host: '160.238.126.103', port: "5432",  comment: 'Lustk Office'}
+# prometheus
+  - {host: '95.216.238.58', port: "9100",  comment: 'Prometheus'}
+  - {host: '95.216.238.58', port: "9187",  comment: 'Prometheus'}
+# proxy
+  - {host: '65.108.193.98', port: "8888",  comment: 'Proxmox main'}
+  - {host: '65.21.115.16/29', port: "8888",  comment: 'Hetzner Subnet'}
+  - {host: '65.21.229.174/32', port: "8888",  comment: 'Hetzner Subnet'}
+  - {host: '95.216.238.56/29', port: "8888",  comment: 'Hetzner Subnet'}
+  - {host: '95.217.196.173/29', port: "8888",  comment: 'Homeweb Prox4'}
+  - {host: '160.238.126.103/32', port: "8888",  comment: 'Lustk Office'}
+  - {host: '185.83.148.144/32', port: "8888",  comment: 'From dima'}
+  - {host: '95.217.196.167/32', port: "8888",  comment: 'Homexen4'}
+  - {host: '95.217.196.173/32', port: "8888",  comment: 'Homexen4'}
+  - {host: '65.21.211.185/32', port: "8888",  comment: 'Homexen5'}
+
+firewall_allowed_dyndns_PARANOID_OPS_PG:
+  - {host: 'static.dyndns-web.com', port: "5432",  comment: 'static.dyndns-web.com'}
+  - {host: 'home-gr.dyndns-web.com', port: "5432",  comment: 'home-gr.dyndns-web.com'}
+  # proxy
+  - {host: 'static.dyndns-web.com', port: "8888",  comment: 'static.dyndns-web.com'}
+  - {host: 'home-gr.dyndns-web.com', port: "8888",  comment: 'home-gr.dyndns-web.com'}

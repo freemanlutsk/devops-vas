@@ -1,0 +1,6 @@
+---
+
+- name: Deploy firewall
+  hosts: "{{ list_hosts | default(['fakehost']) }}"
+  roles:
+    - { role: firewall, tags: ["firewall"] }

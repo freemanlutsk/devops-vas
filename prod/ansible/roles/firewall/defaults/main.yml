@@ -1,0 +1,37 @@
+---
+
+dcos: "off"
+
+firewall_allowed_tcp_ports:
+  - "22"
+
+firewall_allowed_tcp_ports_DEFAULT: []
+
+firewall_allowed_SSH: []
+
+firewall_allowed_PARANOID_OPS: []
+firewall_allowed_dyndns_PARANOID_OPS: []
+
+firewall_allowed_ips_nfs: []
+firewall_allowed_ips_unic: []
+firewall_allowed_ips_predictor: []
+firewall_allowed_ips_memcached: []
+firewall_allowed_ips_redis: []
+firewall_allowed_ips_aerospike: []
+firewall_allowed_ips_elasticsearch: []
+firewall_allowed_ips_zabbix: []
+firewall_allowed_ips_baculaserver: []
+firewall_allowed_ips_baculaclient: []
+firewall_allowed_ips_kibana: []
+firewall_allowed_ips_pg: []
+firewall_allowed_ips_vertica: []
+firewall_allowed_ips_ci: []
+firewall_allowed_ips_cf: []
+firewall_allowed_udp_ports: []
+firewall_forwarded_tcp_ports: []
+firewall_forwarded_udp_ports: []
+firewall_additional_rules: []
+firewall_allowed_ips_network: []
+firewall_allowed_ips_kafka: []
+firewall_allowed_ips_predictor_vw: []
+firewall_log_dropped_packets: true

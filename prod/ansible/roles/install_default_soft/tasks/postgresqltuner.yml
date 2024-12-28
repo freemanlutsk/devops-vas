@@ -1,0 +1,16 @@
+---
+
+- name: "Install Perl modules"
+  apt:
+    name: ["libdbd-pg-perl", "libdbi-perl", "perl-modules"]
+    force_apt_get: yes
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: "Download postgresqltuner script"
+  get_url:
+    url: https://postgresqltuner.pl
+    dest: /usr/local/bin/postgresqltuner
+    mode: '0555'
+
+...

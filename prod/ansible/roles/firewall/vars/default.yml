@@ -1,0 +1,10 @@
+
+firewall_allowed_tcp_ports_DEFAULT:
+  - {port: "22", comment: 'SSH'}
+
+firewall_allowed_custom_services_DEFAULT: []
+
+firewall_allowed_custom_services_PG: []
+firewall_allowed_groups_ips_PG: []
+firewall_allowed_single_ips_PG: []
+firewall_allowed_dyndns_PARANOID_OPS_PG: []

@@ -1,0 +1,21 @@
+---
+
+- name: "Add apt-key for PostgreSQL"
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+  when: ansible_distribution_release == "focal"
+
+- name: "Add repo for PostgreSQL"
+  apt_repository:
+    repo: "deb [arch=amd64] https://apt.postgresql.org/pub/repos/apt/ focal-pgdg main"
+    state: present
+  when: ansible_distribution_release == "focal"
+
+- name: "Install psql"
+  apt:
+    name: "postgresql-client-13"
+    force_apt_get: yes
+    update_cache: yes
+  when: ansible_distribution_release == "focal"
+
+...

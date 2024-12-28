@@ -1,0 +1,28 @@
+---
+
+raid: ""
+
+reboot: "off"
+upgrade: "off"
+gather_facts: "no"
+inst_type: "default"
+aws: "off"
+
+company: "bidmachine"
+zabbix: "zabbix.bidmachine.io"
+
+# 1- enable, 0 - disable
+Unattended_Upgrade: 0
+Update_Package_Lists: 0
+Download_Upgradeable_Packages: 0
+AutocleanInterval: 0
+
+### NTP ###
+ntp_enabled: true
+ntp_timezone: Etc/UTC
+ntp_manage_config: true
+ntp_servers:
+ - time.nist.gov iburst
+ - time.google.com iburst
+ - 0.us.pool.ntp.org iburst
+ - time.servers.com iburst

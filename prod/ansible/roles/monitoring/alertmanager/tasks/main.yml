@@ -1,0 +1,13 @@
+---
+
+- name: Copy alertmanager rules
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "/etc/alertmanager/templates/{{ item }}"
+    mode: "0644"
+    owner: "alertmanager"
+    group: "alertmanager"
+  with_items:
+    - alertmanager.tmpl
+  notify:
+    - Restart alertmanager

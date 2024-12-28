@@ -1,0 +1,49 @@
+---
+
+- name: Add user deploy
+  ansible.builtin.user:
+    name: deploy
+    shell: /bin/bash
+
+- name: Add ssh keys for user deploy
+  ansible.builtin.lineinfile:
+    dest: "/home/deploy/.ssh/authorized_keys"
+    line: "{{ item }}"
+    create: true
+    mode: "0644"
+  with_items:
+    - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDRbcRuBIf7PTCHQ7nCMyFIfueT+NKVkmDoRo4kYkl6E0pvzSBf9Ng3c4gPq5Oc3AeyKQfxNR22dBCwbqeWLDxzZqSwI7KzsSq2eGWaoBuwG/cCcC8wadvGpKbaV9hEkrN133lK1jgy6iwZsc/yqfL6T0hpwdD7yzfVZVMLrH1twwzwaqlHqgwYuxU5H2zuIW09Frqmk6Xu+SUKUaA5vRMIpD9x1OiwwFyvOYtjTbXJZFDJUSjBz8A6qZoR1C8ET08hLrrfs36a+1q0Lsg+WH7zfZ7rF5FWbBluLGZEFAATpFKMsAjcNK2UBSqo+acXEiOJlTBGHSDZRRf79SB44BOH yura@yura-Satellite-L300'
+
+- name: Change root password
+  ansible.builtin.user:
+    name: root
+    update_password: always
+    password: "$6$rounds=40000$W7LIZ6pEb4dbevzN$E2fyHmzOX7ewIqxOgADbL0XCf0V7nKpjS4eEkcxjCxv.r98qjSLA/os7iedYghj.u9IZ2bbbviin5TLayYP590"
+#  user: name=root update_password=always password=$6$saltsalt$jpWeDtvK9SuDvkKaH0EVFPv5JegFnlBdUjt0KiTY/l4t0rvVcOO5s.0yFp5HSmPVzhf0g4CekuUomUsCUwUOr0
+
+- name: Add ssh keys for user root
+  ansible.builtin.lineinfile:
+    dest: "/root/.ssh/authorized_keys"
+    line: "{{ item }}"
+  with_items:
+    - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDRbcRuBIf7PTCHQ7nCMyFIfueT+NKVkmDoRo4kYkl6E0pvzSBf9Ng3c4gPq5Oc3AeyKQfxNR22dBCwbqeWLDxzZqSwI7KzsSq2eGWaoBuwG/cCcC8wadvGpKbaV9hEkrN133lK1jgy6iwZsc/yqfL6T0hpwdD7yzfVZVMLrH1twwzwaqlHqgwYuxU5H2zuIW09Frqmk6Xu+SUKUaA5vRMIpD9x1OiwwFyvOYtjTbXJZFDJUSjBz8A6qZoR1C8ET08hLrrfs36a+1q0Lsg+WH7zfZ7rF5FWbBluLGZEFAATpFKMsAjcNK2UBSqo+acXEiOJlTBGHSDZRRf79SB44BOH yura@yura-Satellite-L300'
+
+- name: Find ssh configs with PasswordAuthentication
+  ansible.builtin.find:
+    paths: /etc/ssh/
+    file_type: file
+    recurse: true
+    contains: '^PasswordAuthentication.*$'
+  register: config_list
+
+- name: Disable ssh PasswordAuthentication
+  ansible.builtin.lineinfile:
+    dest: "{{ item.path }}"
+    regexp: '^PasswordAuthentication.*$'
+    line: 'PasswordAuthentication no'
+  with_items: "{{ config_list.files }}"
+
+- name: Restarting ssh service
+  ansible.builtin.service:
+    name: ssh
+    state: restarted

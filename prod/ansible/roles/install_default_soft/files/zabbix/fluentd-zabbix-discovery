@@ -1,0 +1,17 @@
+#!/usr/local/bin/ruby
+require 'json'
+require 'open-uri'
+
+PLUGINS_URL = "http://localhost:12000/api/plugins.json"
+
+json = JSON.parse(open(PLUGINS_URL, 'r', &:read))
+
+puts({
+  data: json['plugins'].map do |plugin|
+    {
+      "{#PLUGIN_ID}" => plugin['plugin_id'],
+      "{#PLUGIN_CATEGORY}" => plugin['plugin_category'],
+      "{#PLUGIN_TYPE}" => plugin['type'],
+    }
+  end
+}.to_json)

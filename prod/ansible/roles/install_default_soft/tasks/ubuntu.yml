@@ -1,0 +1,331 @@
+---
+
+- name: Install resolvconf
+  ansible.builtin.apt:
+    name:
+      - 'resolvconf'
+    update_cache: true
+    force_apt_get: true
+    state: present
+  when: ansible_distribution == "Ubuntu"
+
+- name: Add resolv.conf
+  ansible.builtin.template:
+    src: resolv.conf.j2
+    dest: "{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  tags: resolv
+  with_items:
+    - '/run/resolvconf/resolv.conf'
+    - '/etc/resolvconf/resolv.conf.d/head'
+  when: ansible_distribution == "Ubuntu"
+
+- name: Change hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Fix hostname in /etc/hosts
+  ansible.builtin.lineinfile:
+    dest: "/etc/hosts"
+    regexp: '^127\.0\.1\.1.*$'
+    line: '{{ ansible_host }} {{ inventory_hostname }}'
+    backrefs: true
+
+- name: Fix hostname ext in /etc/hosts
+  ansible.builtin.lineinfile:
+    dest: /etc/hosts
+    regexp: '^{{ ansible_host }}.*$'
+    line: '{{ ansible_host }} {{ inventory_hostname }}'
+
+- name: Set preserve_hostname to true
+  ansible.builtin.lineinfile:
+    path: /etc/cloud/cloud.cfg
+    regexp: '^preserve_hostname'
+    line: 'preserve_hostname: true'
+  when: ansible_distribution == "Ubuntu" and ( ansible_distribution_version | int ) >= 18 and type == "virtual"
+
+- name: Install list of packages
+  ansible.builtin.apt:
+    name:
+      - 'apt-transport-https'
+      - 'atop'
+      - 'bash-completion'
+      - 'ca-certificates'
+      - 'cpufrequtils'
+      - 'curl'
+      - 'dbus'
+      - 'dmidecode'
+      - 'dnsutils'
+      - 'git'
+      - 'htop'
+      - 'iftop'
+      - 'iotop'
+      - 'iperf3'
+      - 'iptraf'
+      - 'gnupg'
+      - 'libpam-systemd'
+      - 'libssl-dev'
+      - 'lm-sensors'
+      - 'lsof'
+      # - 'mc'
+      - 'mtr'
+      - 'nano'
+      - 'net-tools'
+      - 'ngrep'
+      - 'parted'
+      - 'pciutils'
+      - 'procps'
+      - 'psmisc'
+      - 'pwgen'
+      - 'python3-pip'
+      - 'screen'
+      - 'smartmontools'
+      - 'software-properties-common'
+      - 'stress'
+      - 'sysstat'
+      - 'telnet'
+      - 'unzip'
+      - 'vim'
+    update_cache: true
+    force_apt_get: true
+    state: present
+
+- name: Install ipvsadm, ipset, etc
+  ansible.builtin.apt:
+    name:
+      - 'ipset'
+      - 'ipvsadm'
+      - 'libjna-java'
+    update_cache: true
+    force_apt_get: true
+    state: present
+  when: inst_type == "k8s"
+
+- name: Install postfix
+  ansible.builtin.apt:
+    name:
+      - 'postfix'
+    update_cache: true
+    force_apt_get: true
+    state: present
+  when: inst_type != "k8s"
+
+- name: Enable IP forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: true
+    state: present
+    reload: true
+  when: inst_type == "proxmox"
+
+- name: Add repo for Proxmox VE
+  ansible.builtin.apt_repository:
+    validate_certs: false
+    update_cache: false
+    repo: "deb [arch=amd64] http://download.proxmox.com/debian/pve bullseye pve-no-subscription"
+  when: inst_type == "proxmox"
+
+- name: Remove pve-enterprise
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/pve-enterprise.list
+    state: absent
+  when: inst_type == "proxmox"
+
+- name: Get gpg
+  ansible.builtin.get_url:
+    url: https://enterprise.proxmox.com/debian/proxmox-release-bullseye.gpg
+    dest: /etc/apt/trusted.gpg.d/proxmox-release-bullseye.gpg
+    mode: "0644"
+  when: inst_type == "proxmox"
+
+- name: Install Proxmox VE packages.
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - 'isc-dhcp-server'
+      - 'open-iscsi'
+      - 'postfix'
+      - 'proxmox-ve'
+    state: present
+  when: inst_type == "proxmox"
+
+- name: Install pip packages
+  ansible.builtin.pip:
+    name:
+      - 'glances'
+      - 'httpstat'
+      - 's-tui'
+  ignore_errors: true # for old python
+  register: ignore_errors_register
+
+- name: Performance tuning
+  ansible.builtin.lineinfile:
+    path: /etc/default/cpufrequtils
+    line: GOVERNOR="performance"
+    create: true
+    mode: "0644"
+
+- name: Disable ondemand
+  ansible.builtin.systemd:
+    name: ondemand
+    enabled: false
+  ignore_errors: true # for ubuntu 22.04
+  register: ignore_errors_register
+  when: ansible_distribution == "Ubuntu"
+
+- name: Restart cpufrequtils
+  ansible.builtin.systemd:
+    state: restarted
+    name: cpufrequtils
+
+- name: Add /etc/security/limits.conf
+  ansible.builtin.template:
+    src: limits.conf
+    dest: /etc/security/limits.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add /etc/modules
+  ansible.builtin.template:
+    src: modules
+    dest: /etc/modules
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add /etc/sysctl.conf
+  ansible.builtin.template:
+    src: sysctl.conf
+    dest: /etc/sysctl.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload sysctl
+  when: inst_type == "default"
+
+- name: Add /etc/sysctl.conf
+  ansible.builtin.template:
+    src: sysctl-postgresql.conf
+    dest: /etc/sysctl.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload sysctl
+  when: inst_type == "PostgreSQL"
+
+- name: Update sysctl
+  ansible.builtin.systemd:
+    state: restarted
+    name: systemd-sysctl
+
+- name: Add bash_profile for user root
+  ansible.builtin.template:
+    src: .bash_profile
+    dest: /root/.bash_profile
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add bash_profile for user deploy
+  ansible.builtin.template:
+    src: .bash_profile
+    dest: /home/deploy/.bash_profile
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add /etc/rc.local
+  ansible.builtin.template:
+    src: rc.local.default
+    dest: /etc/rc.local
+    owner: root
+    group: root
+    mode: "0744"
+  notify: disable ondemand
+  when: type == "hardware"
+
+- name: Check if autoupdate config exist
+  ansible.builtin.stat:
+    path: "/etc/apt/apt.conf.d/10periodic"
+  register: autoupdate_config
+
+- name: Copy autoupdate config to /etc/apt/apt.conf.d/10periodic
+  register: service_copied
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: /etc/apt/apt.conf.d/10periodic
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  with_items:
+    - 'templates/10periodic.j2'
+  when: (autoupdate_config.stat.exists) and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+
+- name: Check if autoupdate config exist
+  ansible.builtin.stat:
+    path: "/etc/apt/apt.conf.d/50unattended-upgrades"
+  register: autoupdate_config2
+
+- name: Copy autoupdate config to /etc/apt/apt.conf.d/50unattended-upgrades
+  register: service_copied
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  with_items:
+    - 'templates/50unattended-upgrades.j2'
+  when: (autoupdate_config2.stat.exists) and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+
+# necessary for k8s 1.22+
+- name: Ensure br_netfilter is enabled
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Add br_netfilter to autostart
+  ansible.builtin.lineinfile:
+    path: /etc/modules-load.d/modules.conf
+    line: br_netfilter
+    state: present
+
+- name: Disable swap
+  ansible.builtin.command: swapoff -a
+  changed_when: true
+  when: inst_type == "k8s"
+
+- name: Remove swapfile from /etc/fstab
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+  when: inst_type == "k8s"
+
+- name: Set journal logs limits
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/journald.conf
+    line: "{{ item }}"
+  with_items:
+    - 'SystemMaxUse=512M'
+
+- name: Restart systemd-journald
+  ansible.builtin.systemd:
+    state: restarted
+    name: systemd-journald
+
+# for k8s 1.22+ (containerd)
+# - name: "Add cron to clear unused images"
+#   ansible.builtin.cron:
+#     name: "clear old images"
+#     weekday: "1"
+#     minute: "0"
+#     hour: "7"
+#     job: "crictl rmi --prune"
+#   when: inventory_hostname in groups["bm_k8s_us_was"]

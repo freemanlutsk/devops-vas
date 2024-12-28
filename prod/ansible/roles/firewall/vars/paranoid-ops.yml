@@ -1,0 +1,24 @@
+firewall_allowed_PARANOID_OPS:
+# prometheus
+  - {host: '95.216.238.58', port: "9100",  comment: 'Prometheus'}
+# ssh
+  - {host: '65.108.193.98', port: "22",  comment: 'Proxmox main'}
+  - {host: '65.21.115.16/29', port: "22",  comment: 'Hetzner Subnet'}
+  - {host: '185.183.93.72', port: "22",  comment: 'Lustk Office'}
+
+# web ssl
+  - {host: '65.108.193.98', port: "443",  comment: 'Proxmox main'}
+  - {host: '65.21.115.16/29', port: "443",  comment: 'Hetzner Subnet'}
+  - {host: '185.183.93.72', port: "443",  comment: 'Lustk Office'}
+  - {host: 'static.dyndns-web.com', port: "443",  comment: 'static.dyndns-web.com'}
+  - {host: 'home-gr.dyndns-web.com', port: "443",  comment: 'home-gr.dyndns-web.com'}
+
+# web non ssl
+  - {host: '65.108.193.98', port: "80",  comment: 'Proxmox main'}
+  - {host: '65.21.115.16/29', port: "80",  comment: 'Hetzner Subnet'}
+  - {host: '185.183.93.72', port: "80",  comment: 'Lustk Office'}
+
+firewall_allowed_dyndns_PARANOID_OPS:
+# web non ssl
+  - {host: 'static.dyndns-web.com', port: "80",  comment: 'static.dyndns-web.com'}
+  - {host: 'home-gr.dyndns-web.com', port: "80",  comment: 'home-gr.dyndns-web.com'}

@@ -1,0 +1,27 @@
+{% raw %}
+{{ define "telegram_message" }}
+  {{ if gt (len .Alerts.Firing) 0 }}
+  <b>🔥 {{ len .Alerts.Firing }} alert(s) firing:</b>
+    {{ range .Alerts.Firing }} {{ template "telegram_alert_firing" .}} {{ end }} {{ end }}
+  {{ if gt (len .Alerts.Resolved) 0 }}
+  <b>✅ {{ len .Alerts.Resolved }} alert(s) resolved:</b>
+    {{ range .Alerts.Resolved }} {{ template "telegram_alert_resolved" .}} {{ end }} {{ end }}
+{{ end }}
+
+{{ define "telegram_alert_firing" }}
+  Severity: <b>{{ .Labels.severity }}</b>
+  <b>{{ .Labels.alertname }}</b>
+  {{ .Annotations.summary }}
+  {{ .Annotations.description }}
+  <b>Node:</b> {{ .Labels.hostname }} / {{ .Labels.instance }}
+  {{ .Annotations.AlertValues }}
+  {{ end }}
+
+{{ define "telegram_alert_resolved" }}
+  <b>{{ .Labels.alertname }}</b>
+  {{ .Annotations.summary }} <b>✅ resolved</b>
+  {{ .Annotations.description }}
+  <b>Node:</b> {{ .Labels.hostname }} / {{ .Labels.instance }}
+  {{ .Annotations.AlertValues }}
+  {{ end }}
+{% endraw %}

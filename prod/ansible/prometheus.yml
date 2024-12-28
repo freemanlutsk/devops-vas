@@ -1,0 +1,79 @@
+
+---
+- hosts: "{{ list_hosts | default(['fakehost']) }}"
+  tasks:
+  roles:
+  - { role: monitoring/prometheus, tags: ["prometheus-custom"] }    
+  - prometheus.prometheus.prometheus
+  vars:
+    prometheus_storage_retention: 2y
+    prometheus_global:
+      scrape_interval: 60s
+      scrape_timeout: 30s
+      evaluation_interval: 15s
+    prometheus_web_external_url: https://prometheus.makinghopp.com
+    prometheus_web_listen_address: "0.0.0.0:9090"
+    prometheus_web_config:
+      basic_auth_users:
+        monit: $2y$10$h9YNBv8ngsgpQwJAtrbcJ.GHbGtX/r9vSVDgOVUryHOOTYd/V2NM6
+    prometheus_scrape_configs:
+    - job_name: "node"
+      scheme: http
+      basic_auth:
+        username: export
+        password: Xevoopo9Ti8Eech5Ma4Aeloghiewaite1
+      static_configs:
+      - targets:
+        - localhost:9100
+        - "{{ hostvars['privateprox3'].ansible_host }}:9100"
+        - "{{ hostvars['privateprox4'].ansible_host }}:9100"
+        - "{{ hostvars['privateprox5'].ansible_host }}:9100"        
+        - "{{ hostvars['privateprox6'].ansible_host }}:9100"
+      relabel_configs:
+        - source_labels: [ __address__ ]
+          target_label: hostname
+          regex: "{{ hostvars['prometheus'].ansible_host }}:9100"
+          replacement: "{{ hostvars['prometheus'].inventory_hostname }}"
+        - source_labels: [ __address__ ]
+          target_label: hostname
+          regex: "{{ hostvars['privateprox3'].ansible_host }}:9100"
+          replacement: "{{ hostvars['privateprox3'].inventory_hostname }}"
+        - source_labels: [ __address__ ]
+          target_label: hostname
+          regex: "{{ hostvars['privateprox4'].ansible_host }}:9100"
+          replacement: "{{ hostvars['privateprox4'].inventory_hostname }}"
+        - source_labels: [ __address__ ]
+          target_label: hostname
+          regex: "{{ hostvars['privateprox5'].ansible_host }}:9100"
+          replacement: "{{ hostvars['privateprox5'].inventory_hostname }}"
+        - source_labels: [ __address__ ]
+          target_label: hostname
+          regex: "{{ hostvars['privateprox6'].ansible_host }}:9100"
+          replacement: "{{ hostvars['privateprox6'].inventory_hostname }}"        
+    - job_name: 'blackbox'
+      metrics_path: /probe
+      params:
+        module: [http_2xx]  # Look for a HTTP 200 response.
+      static_configs:
+        - targets:
+          #- https://127.0.0.1
+      relabel_configs:
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: instance
+        - target_label: __address__
+          replacement: 127.0.0.1:9115
+    prometheus_alertmanager_config:
+        - scheme: http
+          static_configs:
+            - targets: ["127.0.0.1:9093"]
+    prometheus_alert_rules:
+        - alert: WebReachability
+          expr: probe_success == 0
+          for: 5m
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "{% raw %}{{ $labels.instance }}{% endraw %} is down"
+

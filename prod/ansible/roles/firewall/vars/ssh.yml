@@ -1,0 +1,4 @@
+---
+
+firewall_allowed_SSH:
+  - {host: '160.238.126.103', port: "5432",  comment: 'LutskOffice'}

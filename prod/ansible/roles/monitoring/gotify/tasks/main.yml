@@ -1,0 +1,41 @@
+---
+
+- name: Creates directory
+  ansible.builtin.file:
+    path: /opt/gotify
+    state: directory
+
+- name: Create Gotify docker container.
+  community.docker.docker_container:
+    name: gotify
+    image: gotify/server:latest
+    # command: sleep infinity
+    network_mode: host
+    ulimits:
+      - nofile:950000:950000
+      - nproc:950000:950000
+    log_driver: json-file
+    log_options:
+      max-size=2G
+      max-file=50
+    env:
+      GOTIFY_DEFAULTUSER_PASS: the8PheT3Aekoopaezefoo8uC2aixooS
+      TZ: UTC
+      GOTIFY_HOST: ws://localhost:80
+      GOTIFY_CLIENT_TOKEN: "ClK3IX3ovAnXR7O"
+      TELEGRAM_CHAT_ID: "-4534530750"
+      TELEGRAM_BOT_TOKEN: "7911063915:AAElkxpSs4vtKWxNGbrdIkQCe1UtKGKaDDo"
+
+    volumes:
+      - "/opt/gotify:/app/data"
+    recreate: true
+    state: started
+    restart_policy: always
+
+- name: Download Gotify tekegram plugin
+  ansible.builtin.get_url:
+    url: https://github.com/anhbh310/gotify2telegram/releases/download/v1.1.1/telegram-plugin-linux-amd64.so
+    dest: /opt/gotify/plugins/telegram-plugin-linux-amd64.so
+    owner: root
+    group: root
+    mode: '0755'

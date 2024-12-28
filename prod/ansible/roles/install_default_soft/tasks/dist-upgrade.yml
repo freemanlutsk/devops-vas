@@ -1,0 +1,24 @@
+---
+
+- name: Run "apt-get dist-upgrade"
+  apt:
+    update_cache: yes
+    upgrade: dist
+    force_apt_get: yes
+  become: yes
+
+- name: Upgrade "{{ ansible_distribution }} {{ ansible_distribution_version }}" kernel
+  apt:
+    name:
+      - "linux-generic-hwe-{{ ansible_distribution_version }}"
+    install_recommends: yes
+    update_cache: no
+    force_apt_get: no
+    state: latest
+  become: yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: Run "apt-get autoremove"
+  apt:
+    autoremove: yes
+  become: yes

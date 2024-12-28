@@ -1,0 +1,5 @@
+---
+
+gather_facts: false
+inst_type: "default"
+aws: "off"
