@@ -21,6 +21,7 @@
     - tcpdump
     - mc
     - vim
+    - nvme-cli
 
 - name: Remove line containing "tmp" from fstab
   ansible.builtin.lineinfile:
