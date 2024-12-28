@@ -1,8 +1,8 @@
-- name: Include vars
-  ansible.builtin.include_vars: "{{ item }}"
-  with_items:
-#    - ../vars/vault.yml
-    - ../vars/main.yml
+# - name: Include vars
+#   ansible.builtin.include_vars: "{{ item }}"
+#   with_items:
+#     - ../vars/vault.yml
+#     - ../vars/main.yml
 
 - name: Install APT packages install
   ansible.builtin.apt:
