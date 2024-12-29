@@ -6,7 +6,7 @@ prometheus  ansible_host=178.63.119.145 ansible_port=22 type=virtual inst_type=P
 
 [proxmox_nodes]
 privateprox3  ansible_host=159.69.66.135 type=virtual fw=on INT_DNS=127.0.0.1
-privateprox4  ansible_host=94.130.141.151 type=virtual fw=on INT_DNS=127.0.0.1
+#privateprox4  ansible_host=94.130.141.151 type=virtual fw=on INT_DNS=127.0.0.1
 privateprox5  ansible_host=157.90.215.190 type=virtual fw=on INT_DNS=127.0.0.1
 privateprox6  ansible_host=116.202.50.42 type=virtual fw=on INT_DNS=127.0.0.1
 privateprox7  ansible_host=116.202.243.24 type=virtual fw=on INT_DNS=127.0.0.1

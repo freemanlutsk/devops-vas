@@ -26,7 +26,6 @@
       - targets:
         - localhost:9100
         - "{{ hostvars['privateprox3'].ansible_host }}:9100"
-        - "{{ hostvars['privateprox4'].ansible_host }}:9100"
         - "{{ hostvars['privateprox5'].ansible_host }}:9100"        
         - "{{ hostvars['privateprox6'].ansible_host }}:9100"
         - "{{ hostvars['privateprox7'].ansible_host }}:9100"
@@ -39,10 +38,6 @@
           target_label: hostname
           regex: "{{ hostvars['privateprox3'].ansible_host }}:9100"
           replacement: "{{ hostvars['privateprox3'].inventory_hostname }}"
-        - source_labels: [ __address__ ]
-          target_label: hostname
-          regex: "{{ hostvars['privateprox4'].ansible_host }}:9100"
-          replacement: "{{ hostvars['privateprox4'].inventory_hostname }}"
         - source_labels: [ __address__ ]
           target_label: hostname
           regex: "{{ hostvars['privateprox5'].ansible_host }}:9100"
