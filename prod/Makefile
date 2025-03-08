@@ -30,5 +30,11 @@ blackbox-exporter:
 gotify:
 	cd ansible && ansible-playbook -i hosts --extra-vars "list_hosts=prometheus" gotify.yml
 
+
+# Proxmox
+proxmox-init:
+	cd ansible && ansible-playbook -i hosts --extra-vars "list_hosts=$(HOSTS)" proxmox.yml -t proxmox-init
+
+# Before depoly gotifi make some manual steps for apearing the config file i the Notofaction section
 proxmox-notifications:
 	cd ansible && ansible-playbook -i hosts --extra-vars "list_hosts=$(HOSTS)" proxmox.yml -t notifications

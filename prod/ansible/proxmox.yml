@@ -5,3 +5,8 @@
   roles:
     - { role: proxmox/notifications, tags: ["notifications"] }
 
+- name: Proxmox init setup
+  hosts: "{{ list_hosts | default(['fakehost']) }}"
+  roles:
+    - { role: proxmox/init, tags: ["proxmox-init"] }
+
