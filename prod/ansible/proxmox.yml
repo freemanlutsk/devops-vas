@@ -10,3 +10,7 @@
   roles:
     - { role: proxmox/init, tags: ["proxmox-init"] }
 
+- name: Proxmox storage setup
+  hosts: "{{ list_hosts | default(['fakehost']) }}"
+  roles:
+    - { role: proxmox/storage, tags: ["proxmox-storage"] }

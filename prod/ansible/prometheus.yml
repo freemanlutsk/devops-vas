@@ -3,7 +3,7 @@
 - hosts: "{{ list_hosts | default(['fakehost']) }}"
   tasks:
   roles:
-  - { role: monitoring/prometheus, tags: ["prometheus-custom"] }    
+  - { role: monitoring/prometheus, tags: ["prometheus-custom"] }
   - prometheus.prometheus.prometheus
   vars:
     prometheus_storage_retention: 2y
@@ -26,9 +26,10 @@
       - targets:
         - localhost:9100
         - "{{ hostvars['privateprox3'].ansible_host }}:9100"
-        - "{{ hostvars['privateprox5'].ansible_host }}:9100"        
+        - "{{ hostvars['privateprox5'].ansible_host }}:9100"
         - "{{ hostvars['privateprox6'].ansible_host }}:9100"
         - "{{ hostvars['privateprox7'].ansible_host }}:9100"
+        - "{{ hostvars['privateprox8'].ansible_host }}:9100"
       relabel_configs:
         - source_labels: [ __address__ ]
           target_label: hostname
@@ -45,7 +46,11 @@
         - source_labels: [ __address__ ]
           target_label: hostname
           regex: "{{ hostvars['privateprox7'].ansible_host }}:9100"
-          replacement: "{{ hostvars['privateprox7'].inventory_hostname }}"        
+          replacement: "{{ hostvars['privateprox7'].inventory_hostname }}"
+        - source_labels: [ __address__ ]
+          target_label: hostname
+          regex: "{{ hostvars['privateprox8'].ansible_host }}:9100"
+          replacement: "{{ hostvars['privateprox8'].inventory_hostname }}"
     - job_name: 'blackbox'
       metrics_path: /probe
       params:

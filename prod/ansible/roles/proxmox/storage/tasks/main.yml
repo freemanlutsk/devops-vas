@@ -1,0 +1,40 @@
+# - name: Include vars
+#   ansible.builtin.include_vars: "{{ item }}"
+#   with_items:
+#     - ../vars/vault.yml
+#     - ../vars/main.yml
+
+- name: Remove line containing "tmp" from fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    regexp: '.*tmp.*'
+    state: absent
+    backup: true
+
+- name: Unmount /mnt
+  ansible.posix.mount:
+    path: /mnt
+    state: unmounted
+
+- name: Remove the logical volume /dev/vg0/tmp
+  community.general.lvol:
+    vg: vg0
+    lv: tmp
+    state: absent
+    force: true
+
+- name: Create thin pool lv_thin_vm in vg0
+  community.general.lvol:
+    vg: vg0
+    # lv: lv_thin_vm
+    size: 100%FREE
+    thinpool: lv_thin_vm
+  ignore_errors: true
+
+- name: Copy storage configuration
+  ansible.builtin.template:
+    src: storage.cfg
+    dest: /etc/pve/storage.cfg
+
+- name: Set password for CIFS
+  ansible.builtin.shell: "pvesm set u269452 --user u269452 --password WL3PheErhGE3MYrq"
